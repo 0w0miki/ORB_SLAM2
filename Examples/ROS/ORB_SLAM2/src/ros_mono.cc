@@ -47,23 +47,42 @@ int main(int argc, char **argv)
 {
     ros::init(argc, argv, "Mono");
     ros::start();
+    
+    ros::NodeHandle nodeHandler;
+    ros::NodeHandle nh("~");
+    std::string voc_path;
+    std::string cal_path;
+    std::string image;
 
-    if(argc != 3)
+    ros::param::get("~image",image);
+    ros::param::get("~voc_path",voc_path);
+    ros::param::get("~cal_path",cal_path);
+
+    cout << "voc_path is " << voc_path << endl;
+    cout << "cal_path is " << cal_path << endl;
+    if (voc_path=="" && cal_path=="" && argc!=3)
     {
-        cerr << endl << "Usage: rosrun ORB_SLAM2 Mono path_to_vocabulary path_to_settings" << endl;        
+        cerr << endl << "Usage:(1) rosrun ORB_SLAM2 Mono path_to_vocabulary path_to_settings" << endl << "Usage:(2) roslaunch ORB_SLAM2 ORBSLAM.launch" << endl;
         ros::shutdown();
         return 1;
-    }    
+    }else if(argc == 3){
+        cout << "argv[1] is " << argv[1] << endl;
+        cout << "argv[2] is " << argv[2] << endl;
+        voc_path = argv[1];
+        cal_path = argv[2];
+    }
+    if (image == "")
+    {
+        image = "/camera/image_raw";
+    }
+    cout << "image topic is " << image << endl;
 
     // Create SLAM system. It initializes all system threads and gets ready to process frames.
-    ORB_SLAM2::System SLAM(argv[1],argv[2],ORB_SLAM2::System::MONOCULAR,true);
-
+    ORB_SLAM2::System SLAM(voc_path,cal_path,ORB_SLAM2::System::MONOCULAR,true);
+    
     ImageGrabber igb(&SLAM);
 
-    ros::NodeHandle nodeHandler;
-    ros::Subscriber sub = nodeHandler.subscribe("/usb_cam/image_raw", 1, &ImageGrabber::GrabImage,&igb);
-    // ros::Subscriber sub = nodeHandler.subscribe("/rtsp_camera_relay/image", 1, &ImageGrabber::GrabImage,&igb);
-    //ros::Subscriber sub = nodeHandler.subscribe("/camera/image_raw", 1, &ImageGrabber::GrabImage,&igb);
+    ros::Subscriber sub = nodeHandler.subscribe(image, 1, &ImageGrabber::GrabImage,&igb);
 
     ros::spin();
 
