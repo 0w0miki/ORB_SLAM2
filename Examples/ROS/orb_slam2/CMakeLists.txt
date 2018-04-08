@@ -57,6 +57,8 @@ ${PROJECT_SOURCE_DIR}/../../../Thirdparty/g2o/lib/libg2o.so
 ${PROJECT_SOURCE_DIR}/../../../lib/libORB_SLAM2.so
 )
 
+rosbuild_genmsg()
+
 # Node for monocular camera
 rosbuild_add_executable(Mono
 src/ros_mono.cc
